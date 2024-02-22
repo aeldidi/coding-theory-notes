@@ -1,0 +1,52 @@
+\documentclass{article}
+
+\usepackage[fontsize=14pt]{fontsize}
+\usepackage[margin=0.5in]{geometry}
+\usepackage{amsmath}
+\usepackage{parskip}
+
+\newcommand{\header}[1]{
+	\begin{Large}
+	\noindent\textbf{#1}
+	\hrule
+	\vspace{16pt}
+	\normalsize
+	\end{Large}
+}
+
+\newcommand{\h}[2]{
+	\noindent\textbf{\underline{#1.}}
+	#2
+}
+
+\newcommand{\eqs}[1]{
+	\begin{gather*}
+		#1
+	\end{gather*}
+}
+
+\begin{document}
+
+\header{Decoding}
+
+\eqs{
+	C \subset V = F^n \\
+	0+C,\ a_1+C,\ a_2+C  \\
+	a_i + C = \{a_i + v\ |\ v \in C\}
+}
+
+In each coset we choose a representative $a_i$ to be a vector having infinite
+possible weight and call it the \textbf{coset leader.}
+
+To our code $C$ we attach the following array (matrix) called the
+\textbf{standard array} as follows: the size of this array is
+$q^{n-k} \times q^k$, here $q = |F|$, $k = \textnormal{dim} C$.
+
+\textbf{Row 1:} Let us number all vectors in $C = 0+C$ to be $C = \{v_1,\ \cdots,\ v_{qk}\}$.
+
+Assume $v_1 = 0$, then $C = \{0,\ v_2,\ \cdots, v_{qk}\}$.
+
+\textbf{Row 2:} Choose a vector called $a_2$ of minimal weight among remaining
+vectors, and let row 2 be $a_2,\ a_2+v_2,\ a_2+v_3,\ \cdots,\ v_{qk}$.
+
+\end{document}
