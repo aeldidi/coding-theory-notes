@@ -3,15 +3,21 @@
 \usepackage[fontsize=14pt]{fontsize}
 \usepackage[margin=0.5in]{geometry}
 \usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{upgreek}
+\usepackage{amssymb}
+\usepackage{mathtools}
 \usepackage{parskip}
+\usepackage{lmodern}
 
 \newcommand{\header}[1]{
 	\begin{Large}
 	\noindent\textbf{#1}
+	\vspace{2pt}
 	\hrule
 	\vspace{16pt}
-	\normalsize
 	\end{Large}
+	\normalsize
 }
 
 \newcommand{\h}[2]{
@@ -25,7 +31,912 @@
 	\end{gather*}
 }
 
+\renewcommand{\b}[1]{\textbf{#1}}
+\newcommand{\ul}[1]{\underline{#1}}
+\newcommand{\dash}{\textnormal{ \textemdash}}
+\renewcommand{\aligned}[1]{
+	\begin{align*}
+		#1
+	\end{align*}
+}
+\newcommand{\laligned}[1]{
+	\begin{flalign*}
+		#1 &&
+	\end{flalign*}
+}
+\newcommand{\newdef}[2]{\b{\ul{#1:}} #2}
+\renewcommand{\iff}{\textnormal{ iff }}
+\newcommand{\st}{\textnormal{ s.t }}
+
 \begin{document}
+
+\header{MATH 422}
+
+$C$ is a \b{block code} of length $n$ if all words in $C$ have length $n$.
+
+\eqs{
+	n \dash \textnormal{ length of words}                \\
+	M \dash \textnormal{ \# of words}                    \\
+	d = \textnormal{min}\{d(x, y)\ \forall x, y, \in C\}
+}
+
+\header{Hamming Distance ($d(x, y)$)}
+
+Goal: construct codes where words are "sufficiently different".
+
+\newdef{Def}{
+	Let $C$ be a code and $x, y, \in C$ be words. The distance $d(x, y)$
+	between $x$ and $y$ is the number of places where they differ.
+}
+
+\newdef{Ex}{
+	$F_2 = \mathbb{Z}_2$
+	\aligned{
+		x = 0\ 0\ 1\ 1 & \hspace{10px} \therefore d(x, y) = 2
+		\textnormal{ because they differ in 2 places}         \\
+		y = 0\ 1\ 0\ 1 &                                      \\
+	}
+}
+
+\newdef{Theorem}{
+	$d(x, y)$ is a \ul{metric} on $f_q^n$
+	\eqs{\lfloor C \subset F_q^n\rfloor}
+}
+\laligned{
+	\textnormal{Proof: } & 1.\ d(x, y) \geq 0          \\
+	& 2.\ d(x, y) \iff x = y                           \\
+	& 3.\ d(x, y) = d(y, x)                            \\
+	& 4.\ \textnormal{let } x, y, z \in F_q^n
+	\textnormal{ then } d(x, z) \leq d(x, y) + d(y, z)
+}
+
+Observation: $d(x, y)$ is the  minimum number of changes in digits in $x, y$
+needed to change $x$ into $y$.
+
+\newdef{Proof of the triangle inequality}{
+	$d(x, y) \leq \textnormal{ \# of changes to change } x
+		\textnormal{ into } z$.
+	\laligned{
+		\textnormal{case 1: } & d(x, y) \textnormal{ only changes
+			things which are already changed in } x \rightarrow
+		z. \\
+		& \therefore d(x, z) = d(x, y) + d(y, z) \\
+		\textnormal{case 2: } & d(x, y) \textnormal{ changes things not
+			already changed in } x \rightarrow z. \\
+		& \therefore d(x, z) = d(x, y) + (d(x, z) + A), (
+		\textnormal{where } A \textnormal{ is the number of changes
+			between } \\
+		& y \textnormal{ and } z) \\
+		& \therefore d(x, z) \geq d(x, y) + d(y, z)
+	}
+}
+
+\newdef{Remark}{Hamming distance is not unique on $F_q^n$.}
+
+\newdef{Remark}{
+	A good code is one which has relatively large Hamming Distance.
+}
+
+\newdef{Def}{
+	An $(n, M, d)$ code is a code with word length $n$, having $M$ words,
+	with minimal distance $d$.
+}
+
+\newdef{Remark}{
+	A code $C$ is a subset in $F_q^n$. Hence $C$ can be presented by a
+	matrix of size $M \times n$ whose rows are words.
+}
+
+\newdef{Def}{
+	Let $C \subset F_q^n$ be a code and $x \in C$. The weight of $x$ is
+	denoted by $w(x)$ and is equal to the number of plaes where
+	$x_i \neq 0$.
+}
+
+\newdef{Lemma}{
+	Let $q = 2$, $C \subset \mathbb{Z}_2^n$, and let $x, y \in C$. Then
+	\aligned{
+		d(x, y) & = w(x + y) = w(x - y) = w(x) + w(y) - 2w(xy) \\
+		x + y   & = x_1+y_1,\ x_2 + y_2,\ \cdots,\ x_n+y_n
+		\textnormal{ (taken modulo } 2)
+	}
+	This is useful because storing the distance between each vector in the
+	computer takes way more space than simply storing the weights.
+
+	$x + y$ is only guaranteed to be part of $C$ if $C$ is a linear code,
+	not in, general, we will cover that later.
+}
+
+\header{Decoding Scheme}
+
+\newdef{Notation}{
+	Note that $x \Rightarrow y$ means that we send $x$ through a channel
+	and recieve $y$.
+}
+
+Given $C \subset F_q^n$, Take $x \in C \Rightarrow y \leftarrow$ The recieved
+vector.
+
+Decoding is the process of trying to guess what $x$ was given $y$.
+
+We could decode $y$ as $x' \in C$ as the closest to $y$. This is called the
+\ul{Nearest Neighbour} decoding strategy.
+
+This strategy maximizes probability of correcting errors provided that our
+channel has the following properties:
+
+\begin{enumerate}
+	\item Each symbol transmitted has the same probability
+	      $p < \frac{1}{q}$, of being recieved in error.
+	\item Out of $q - 1$ removing symbols, each is equally likely.
+\end{enumerate}
+
+Such a channel is called a $q$-ary symmetric channel.
+
+In this course all channels are $q$-ary symmetric channels unless otherwise
+specified.
+
+\header{Detection and Correction Theorem}
+
+\begin{enumerate}
+	\item A code can detect up to $t$ or fewer errors\iff
+	      $d(C) \geq t + 1$.
+	\item $C$ can correct up to $t$ errors\iff $d(C) \geq 2t+1$.
+\end{enumerate}
+
+\newdef{Proof}{
+	First we will prove 1.
+
+	We say $C$ can detect up to $t$ errors if the followingholds. Take
+	arbitrary vector $x \in C$, send through your channel and assume
+	$t \geq 1$ or fewer errors occurred.
+
+	Let $y$ be the recieved vector, then $y \notin C$ because
+	$d(C) \geq t+1$.
+}
+
+\newdef{Def}{
+	let $x \in F_q^n$ and $r \in \mathbb{N}$. Then the set
+	$\{y \in F_q^n\ |\ d(x, y) \leq r\}$ is called the \ul{bar} with radius
+	$r$ with center $x$.
+}
+
+\newdef{Proof}{
+	Now we will prove 2.
+
+	We can say $C$ can correct up to $t$ errors if given some $x \in C$
+	with $t$ coordinates changed is $y \notin C$, then among all words in
+	$C$,  $x$ is the closest to $y$.
+
+	Assume we send $c \in C$ and we recieved $y$ we assume that up to $t$
+	errors occurred, i.e $d(x, y) \leq t$. We need to show $x$ is the
+	closest to $y$.
+
+	Assume not true, i.e $\exists\ x' \in C \st d(x', y) \leq d(x, y)$.
+
+	Consider the ball centered around $y$ with radius $t$.
+	\aligned{
+		d(x, x') & \leq d(x', y) + d(x, y) \\
+		         & \leq t + t = 2t         \\
+		         & \therefore d(C) \leq 2t
+	}
+	$\therefore\ $ contradiction since $d(C) \geq 2t + 1$.
+}
+
+\newdef{Corollary}{
+	Let $d = d(C)$. Then $C$ can detect up to $d-1$ errors and correct up
+	to $\lfloor\frac{d-1}{2}\rfloor$ errors.
+}
+
+\header{Equivalence of Codes}
+
+Let $S = \{ a_1, \cdots, a_n \}$. A permutation of $S$ is a bijection mapping
+$f: S \rightarrow S$.
+
+\[
+	\begin{bmatrix}
+		a_1    & a_2    & \cdots & a_n    \\
+		f(a_1) & f(a_2) & \cdots & f(a_n) \\
+	\end{bmatrix}
+\]
+
+\newdef{Def}{
+	Let $C, C'$ be codes. We say $C$ is equivalent to $C'$ if we can get to
+	$C'$ from $C$ using the following operations:
+
+	\begin{enumerate}
+		\item Permuting columns (switch their order).
+		\item Fix a column and permute symbols within their column.
+	\end{enumerate}
+
+	Notation: $C' \sim C$.
+}
+
+\newdef{Remark}{
+	If we permute rows in $C$ we don't change $C$ (permuting a row is the
+	same as permuting symbols in each column).
+}
+
+\newdef{Theorem}{Assume $C \sim C'$. They have the same parameters $n, M, d$.}
+
+\newdef{The Singleton Bound}{$M \leq q^{n - d + 1}$}.
+
+\newdef{Lemma}{Let $d \geq 2$. Then $A_q(n, d) \leq A_q(n - 1, d - 1)$.}
+
+\newdef{Proof}{
+	\laligned{
+		\textnormal{Let } & x = x_1, x_2, \cdots, x_n \\
+		& y = y_1, y_2, \cdots, y_n
+	}
+	Let us delete the $n_{th}$ component in $x, y$. Let $x', y'$ be the
+	resulting words.
+	\laligned{
+		\textnormal{Let } & x' = x_1, x_2, \cdots, x_{n-1} \\
+		& y' = y_1, y_2, \cdots, y_{n-1}
+	}
+	\laligned{
+		\textnormal{case 1: } & x' = y' \\
+		& d(x, y) = 1 \\
+		\textnormal{case 2: } & x' \neq y' \\
+		& \textnormal{The claim is that } d(x', y') \textnormal{
+			can be reduced by 1 only.} \\
+		& \textnormal{If $x_n = y_n$, $d(x', y') = d(x, y)$.} \\
+		& \textnormal{If $x_n \neq y_n$, $d(x', y') = d(x, y) - 1$.} \\
+		& \textnormal{In particular, if $d(x, y) \geq 2$ then
+			$x' \neq y'$.}
+	}
+}
+
+Let $C$ be an $(n, M, d)$ code \st $M = A_q(n, d),\ x, y \in C \st d(x, y) = d$
+, and $i$ be the column where $x_i \neq y_i,\ i = n$.
+
+Lets delete this column.
+
+Let $C'$ be the resulting matrix or code. Note that the resulting rows are
+distinct $d \geq 2$. $C'$ has parameters $(n-1, M, d-1)$.
+
+Now we are done.
+
+\newdef{Lemma}{
+	Let $q = 2$. Assume $d$ is even. Then $A_2(n, d) = A_2(n-1, d-1)$.
+}
+
+\newdef{Example}{
+	$A_2(5, 3) = 4$.
+	\laligned{
+		C_3 = \begin{bmatrix}
+			0 & 0 & 0 & 0 & 0 \\
+			0 & 1 & 1 & 0 & 1 \\
+			1 & 0 & 1 & 1 & 0 \\
+			1 & 1 & 0 & 1 & 1 \\
+		\end{bmatrix}
+	}
+	If you increase to $A_2(6, 4) = 4$ still equals 4.
+	\laligned{
+		\tilde{C_3} = \begin{bmatrix}
+			0 & 0 & 0 & 0 & 0 & | & 0 \\
+			0 & 1 & 1 & 0 & 1 & | & 1 \\
+			1 & 0 & 1 & 1 & 0 & | & 1 \\
+			1 & 1 & 0 & 1 & 1 & | & 0 \\
+		\end{bmatrix}
+	}
+}
+
+\header{Binomial Coefficients}
+
+$\binom{n}{m} \textnormal{ "n choose m" } = \frac{n!}{m!(n-m)!}$
+
+\newdef{Lemma}{
+	Assume $S = \{x_1, \cdots, x_n\}$. Then the number of ordered choices
+	of $m$ distinct elements in $S$ is $\frac{n!}{(n-m)!}$.
+}
+
+\header{Balanced Block Design}
+
+Let $S = \{x_1, \cdots, x_n\}$ be \b{points}.
+
+Let $B_1, \cdots, B_n \subset S$ be \b{blocks}.
+
+\begin{enumerate}
+	\item Each point $x$ lies in $r$ blocks.
+	\item Each block $B_i$ contains $k$ points.
+	\item Each pair $x_i, x_j$, $i \neq j$ lies in $\lambda$ blocks.
+\end{enumerate}
+
+This is called a $(b, v, r, k, \lambda)$-design.
+
+\h{Relations}
+
+Consider $T = \{(x, B)\ |\ x \in S, B \textnormal{ is a block}\}$.
+
+There are $v$ possibilities for $x$, and $r$ possibilities for $B$,
+$\therefore \#T = vr$.
+
+If we consider $B$ first, there are $b$ blocks, each containing $k$ points,
+$\therefore \#T = kb$ and \newline $v(v-1)\lambda = k(k-1)b$.
+
+$(v-1)\lambda = r(k-1)$
+
+\newdef{Def}{A design is called symmetric if $v = b$.}
+
+\newdef{Remark}{
+	For such designs where $k = r$.
+
+	These are called $(v, k, \lambda)$-design, we can attach the incidence
+	matrix
+
+	\aligned{
+		A      & = (a_{ij})\ ((a_{ij})\ is\ v \times b) \\
+		a_{ij} & = \begin{cases}
+			1 \textnormal{ if } x_i \in B_j \\
+			0 \textnormal{ if } x_i \notin B_j
+		\end{cases}
+	}
+}
+
+\pagebreak
+
+\newdef{Example}{
+	Let $v=7, b=7, r=k=3$ (\# of points per line), and $\lambda = 1$, and
+	\newline $S = \{1, 2, 3, 4, 5, 6, 7\}$.
+	\aligned{
+		B_1 = \{1, 2, 4\} & \ B_3 = \{4, 5, 7\}                    \\
+		B_2 = \{1, 3, 7\} & \ B_4 = \{1, 5, 6\}                    \\
+		B_5 = \{3, 4, 6\} & \ B_6 = \{2, 6, 7\}\ B_7 = \{2, 3, 4\}
+	}
+
+	The incidence matrix would look something like
+
+	\aligned{
+		A = \begin{bmatrix}
+			1      & 1      & 0      & 1      & 0      & 0      & 0      \\
+			1      & 0      & 0      & 0      & 0      & 1      & 1      \\
+			\vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots \\
+		\end{bmatrix} & \textnormal{ Each row has 3 1s (because
+			                                $r = k = 3$) and 4 zeroes.}
+	}
+
+	If we take $A$, and append to the front a binary repetition code and to
+	the back an inverted (binary invert, meaning $0 \rightarrow 1$ and
+	vice versa) $A$ we get
+
+	\[
+		C = \begin{bmatrix}
+			0 & 0 & 0      & 0 & 0 & 0 \\
+			1 & 1 & 1      & 1 & 1 & 1 \\
+			  &   & \ \ A  &   &   &   \\
+			  &   & \sim A &   &   &   \\
+		\end{bmatrix}
+	\]
+
+	we have $C$ is an $(n, M, d)$-code with $n=7, M=16, d=3$.
+}
+
+\newdef{LHS Sphere-Packing Bound}{
+	\[M(\sum_{k=0}^{t} \binom{n}{k} (q-1)^k) \leq q^n\]
+
+	If $n = 7$ and $q = 2$, LHS $= 16(1+7)=16\cdot8=2^7$
+
+	Hence our code is perfect since $2^7=q^n$. Hence
+	$A_2(n, d) = A_2(7, 3) = 16\ (M)$
+}
+
+\newdef{Remark}{
+	\laligned{
+		C = \begin{bmatrix}
+			\ \ \ 0\ \ \\
+			\ \ \ 1\ \ \\
+			\ \ \ A\ \ \\
+			\sim A\ \  \\
+		\end{bmatrix} & \textnormal{
+			\ \ \ By inpection, you can observe that the sum of any
+			2 rows is a row in $C$.
+		} \\
+		& \textnormal{\ \ \ \ In other words, C is a vector subspace in
+			$\mathbb{Z}_2^7$.}
+	}
+}
+
+\newdef{Remark}{
+	The index $[V: W]$ is the number of distinct cosets of $W$ fit into
+	$V$. If $V$ is $\mathbb{Z}_7$, this is $7^{dim(V) - dim(W)}$.
+}
+
+\header{Abelian Groups, Rings, and Fields}
+
+\newdef{Def}{
+	A set $G$ equipped with an operation
+	\aligned{
+		G \times G & \rightarrow G     \\
+		(x, y)     & \rightarrow x + y
+	}
+	is called a group if
+	\begin{enumerate}
+		\item Associative, i.e
+		      $\forall a, b, c \in G, (a+b)+c = a + (b+c)$.
+		\item Existence of an additive identity, i.e
+		      $\exists b \in G \st$
+		      \aligned{
+			      a + 0 = a & \hspace{20px} \forall a \in G \\
+			      0 + a = a &
+		      }
+		\item Every element $a \in G$ has an additive inverse, such
+		      that $\exists b \in G \st a + b = b + a = 0$.
+	\end{enumerate}
+}
+
+\newdef{Def}{
+	A group is called \b{abelian} if $a+b = b+a\ (\forall a, b \in G)$.
+}
+
+\newdef{Example}{$\mathbb{Z}$}
+
+\newdef{Note}{We will denote abelian groups with $A$.}
+
+\newdef{Def}{
+	Let $A$ be a group with the operation $+$. A \b{subset} $H \subseteq A$
+	is called a subgroup if $\forall a, b \in H$ the operation $a+b \in H$
+	("$H$ is stable with respect to $+$") and $H$ is a group itself.
+}
+
+\newdef{Notation}{$H \leq A$ means $H$ is a subgroup of $A$.}
+
+\newdef{Def}{
+	Let $H \leq A$ and $a \in A$. The subset
+	$\{a+h\ |\ h \in H\} \subseteq A$ is called a \b{left coset}
+	(modulo $H$) containing $a$.
+}
+
+\newdef{Notation}{
+	$a+H$. This element $a$ is called a ""representative" of $a+H$.
+
+	Any $b \in a+H$ is called a representative of $a+H$.
+}
+
+\newdef{Notation}{Often $a+H$ is denoted $\bar{a}$.}
+
+\newdef{Properties}{
+	Two left cosets $\bar{a}, \bar{b}$ are either disjoint or equal.
+}
+
+\newdef{Def}{
+	Let $A$ be a group $H \leq A$ and $a, b \in A$. We say $a$ and $b$ are
+	congruent mod $H$ if $\bar{a} = \bar{b}$ or $a - b \in H$.
+}
+
+\newdef{Notation}{$a \equiv b\mod H$}
+
+\newdef{Def}{
+	Let $A$ be a group, $H \leq A$. Then the set of all cosets, denoted by
+	$\frac{A}{H}$, equipped with an operation $\overline{a}+\overline{b} =
+		\overline{a+b}$ is an abelian group called the quotient group.
+}
+
+\newdef{Example}{
+	$A = \mathbb{Z}$, $H = 5\mathbb{Z}$,
+	$\frac{\mathbb{Z}}{\mathbb{Z}} = \{\bar{0}, \bar{1}, \bar{2}, \bar{3},
+		\bar{4}\}$, $\bar{i}+\bar{j}=\overline{i+j}$.
+}
+
+\newdef{Remark}{
+	Each coset $a+H$ contains a unique positive integer, say
+	$b \st 0 \leq b < n$ called the "canonical represetntative" of
+	$\bar{a}$ (context is $\frac{\mathbb{Z}}{n\mathbb{Z}}$).
+}
+
+\newdef{Notation}{$\frac{\mathbb{Z}}{n\mathbb{Z}}$ is denoted $\mathbb{Z}_n$.}
+
+\newdef{Theorem (Lagrange)}{
+	Let $A$ be a group $H \leq A$.
+
+	\begin{enumerate}
+		\item Two cosets are either disjoint or equal
+		\item If $H$ is a finite subgroup say with $n$ elements then
+		      all cosets also have $n$ elements.
+		\item If both $A, H$ are finite, say $|A| = n, |H| = m$, then
+		      $\frac{A}{H}$ is finite and has $\frac{n}{m}$ elements.
+	\end{enumerate}
+}
+
+Vectors $v_1, v_2, \cdots, v_n \in V$ are linearly independent if the following
+holds:
+
+If $a_1, \cdots, a_n \in F \st a_1v_1 + \cdots + a_nv_n = 0$ then all
+$a_i = 0$.
+
+Base: Vectors $v_1, \cdots, v_n \in V$ form a basis of $V$ if
+\begin{enumerate}
+	\item $span{v_1, \cdots, v_n} = V$
+	\item $v_1, \cdots, v_n$ is linearly independent.
+\end{enumerate}
+n is called the dimension of V and it is denoted $dim\ V$.
+
+\newdef{Example}{
+	$V = F^n$
+	\aligned{
+		e_1 = \begin{pmatrix}
+			1      \\
+			0      \\
+			\vdots \\
+			0      \\
+		\end{pmatrix} &  & e_2 = \begin{pmatrix}
+			0      \\
+			1      \\
+			\vdots \\
+			0      \\
+		\end{pmatrix} &  & e_n = \begin{pmatrix}
+			0      \\
+			\vdots \\
+			\vdots \\
+			1      \\
+		\end{pmatrix}
+	}
+	If $W \subset V$ is a vector subspace then $W$ is also a vector space
+	and $dim\ W$ is well defined.
+}
+
+\newdef{Remark}{
+	If $W = \textnormal{span}\{v_1, \cdots, v_k\}$ then its basis can be
+	found as follows.
+	\begin{enumerate}
+		\item if $v_1, \cdots, v_k$ are linearly independent, then $W$
+		      is a basis. If not, remove a vector which is a linear
+		      combination of the others.
+		\item Repeat step 1 with the extra vector removed.
+	\end{enumerate}
+}
+
+\newdef{Remark}{
+	Since $\forall v \in V$ can be expressed as a linear combination of
+	$v_i,\ \#V = (\#F)^n = q^n$, $n = dim\ V$.
+}
+
+\header{ISBN Code (International Standard Book Number)}
+
+\[
+	F_q = \{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, X\}\ \textnormal{11 symbols}
+\]
+
+ISBN codes are an 11-ary code.
+
+\newdef{Example}{
+	The textbook is \texttt{0-19-853803-0}.
+	\aligned{
+		0 & \dash \textnormal{ language (0 = english)}               \\
+		| &                                                          \\
+		1 & \dash \textnormal{ publisher (19 = oxford press)}        \\
+		9 &                                                          \\
+		| &                                                          \\
+		8 & \dash \textnormal{ number assigned to book by publisher} \\
+		5 &                                                          \\
+		3 &                                                          \\
+		8 &                                                          \\
+		0 &                                                          \\
+		3 &                                                          \\
+		| &                                                          \\
+		0 & \dash \textnormal{ check number}                         \\
+	}
+	$n = 10$
+
+	Check number: assume $w = x_1\ x_2\ \cdots\ x_{10}$.
+	\[
+		x_{10} \equiv 1x_1 + 2x_2 + 3x_3 + \cdots + 9x_9 \mod 11
+	\]
+	so if $x_{10} = 10$, then use the symbol $X$.
+}
+
+\newdef{Parameters}{$q = 11, n = 10, M = 10^9, d = 2$}
+
+We need (to say $d = 2$)
+\begin{enumerate}
+	\item $d \neq 1$
+	\item $\exists w_1, w_2\ |\ d(w_1, w_2) = 2$.
+\end{enumerate}
+
+ISBN codes allow us to detect 1 error, but not correct any.
+
+\newdef{Remark}{
+	But if we know the position where the error occurred, we can correct
+	it.
+}
+
+\header{Midterm}
+
+\begin{itemize}
+	\item Know how to find multiplicative inverses
+	\item Know what a canonical representative is and how to find it
+	\item Know what weight is
+	\item Correction and detection theorem
+	\item $A_q(n, d)$
+	\item $\mathbb{Z}_n$
+	\item Equivalent codes, properties of equivalent codes
+	\item Perfect codes
+	\item No balanced block design stuff
+	\item Vector space, subspace, base
+	\item ISBN code
+	\item Linear codes
+\end{itemize}
+
+\header{Linear Codes}
+\eqs{
+	F \dash \textnormal{ Finite Field} \\
+	\#F = p^m = q \Rightarrow \textnormal{we will call $p^m$ by $q$} \\
+	\mathbb{Z}_p \subset F \\
+	m = dim\ F \\
+	V = F^n = \{(a_1, \cdots, a_n)\ |\ a_i \in F\} \\
+	dim\ V = n \\
+	\#V = q^n
+}
+A code $C \subset F^n = V$.
+
+\newdef{Def}{
+	A code $C \subset V$ is called linear if $C$ is a vector subspace in
+	$V$. So $C$ is linear if
+	\begin{enumerate}
+		\item $\forall v, w \in C, v+w \in C$
+		\item $\forall a \in F, \forall v \in C$ we have
+		      $a \cdot v \in C$.
+	\end{enumerate}
+}
+
+\newdef{Def}{
+	If $C$ is linear and $k = dim\ C$ then we say $C$ is an $[n, k]$-code
+	or an $[n, k , d]$-code.
+}
+
+\newdef{Remark}{
+	Every $[n, k, d]$-code is an $(n, k, d)$-code but not every
+	$(n, k, d)$-code is linear.
+}
+
+\newdef{Remark}{$0 \in C$}
+
+\newdef{Example}{
+	Let $F = \{a_1, a_2, \cdots, a_q\}\ (q = p^n)$ where
+	$a_1 = 0, a_2 = 1$.
+	\aligned{
+		C = \begin{bmatrix}
+			0      & 0      & \cdots & 0      \\
+			1      & 1      & \cdots & 1      \\
+			a_3    & a_3    & \cdots & a_3    \\
+			\vdots & \vdots & \vdots & \vdots \\
+		\end{bmatrix} & \textnormal{ (repetition code)}
+	}
+
+	consider \aligned{
+		v   & = a_i\ a_i\ \cdots\ a_i                   \\
+		w   & = a_j\ a_j\ \cdots\ a_j                   \\
+		v+w & = (a_i+a_j)\ (a_i+a_j)\ \cdots\ (a_i+a_j) \\
+		v+w & \in C                                     \\
+	}
+	and same for scalar multiplication, so $C$ is linear.
+}
+
+The vector $\underline{1} = 1\ 1\ \cdots\ 1$ is a basis of $C$, because every
+element of $C$ is a scalar multiple of 1, $\therefore k = 1$ and $C$ is an
+$[n, k]$-code.
+
+\newdef{Def}{
+	Let $C$ be a linear code and $v \in C$. The weight of $v$, denoted by
+	$w(v)$, is \# of positions where entries of $v$ are nonzero.
+}
+
+\newdef{Theorem}{Let $C$ be a linear code. Then $w(C) = d(C)$.}
+
+\newdef{Lemma}{Let $x, y, \in C$. Then $d(x, y) = w(x - y)$.}
+
+\newdef{Proof}{
+	Let $x = x_1\ x_2\ \cdots\ x_n$ and $y = y_1\ y_2\ \cdots\ y_n$.
+	\eqs{
+		d(x, y) = \#i \textnormal{ where } x_i = y_i \\
+		x - y = (x_1 - y_1)\ (x_2 - y_2)\ \cdots\ (x_n - y_n) \\
+		x_i \neq y_i \textnormal{ if i-th coordinate is not zero} \\
+		\therefore d(x, y) = w(x - y)
+	}
+}
+
+\newdef{Advantages of Linear Codes}{
+	\begin{enumerate}
+		\item Let $C$ be linear of dimension $k$. Then $M = q^k$. To
+		      find $d(C)$ you have to compute $d(x, y) \forall x, y$.
+		      \[
+			      \binom{M}{2} = \frac{M(M-1)}{2} \leftarrow
+			      \textnormal{ this is a lot of computation!}
+		      \]
+		      If $C$ is linear, $d(C) = w(C)$ so to find $d(C)$ you
+		      only need to find weights of $M$ vectors.
+		\item To specify $C$ there is no need ot list all the vectors
+		      in $C$. It suffices to list a basis of $C$.
+
+		      If $C$ is an $[n, k]$-linear code then a basis consists
+		      of $k$ vectors while $C$ consists of $q^k$ vectors,
+		      $k < q^k$.
+
+		      \newdef{Def}{
+			      Let $C$ be a linear code and $v_1, \cdots, v_k
+				      \in C$ be a basis. Then the matrix of
+			      size $k \times n$ whose rows are coordinates of
+			      vectors of $v_1, \cdots, v_k$ is called the
+			      \b{generator matrix} of $C$.
+
+			      So given \aligned{
+				      v_1    & = (a_{11}\ a_{12}\ \cdots\ a_{1n}) \\
+				      \vdots &                                    \\
+				      v_k    & = (a_{k1}\ a_{k2}\ \cdots\ a_{kn}) \\
+			      }
+			      \[
+				      G = \begin{pmatrix}
+					      v_1    \\
+					      \vdots \\
+					      v_k    \\
+				      \end{pmatrix}
+			      \]
+			      If \[A = \begin{pmatrix}
+					      G                                    \\
+					      \textnormal{All linear combinations} \\
+					      \textnormal{of vectors in } G        \\
+				      \end{pmatrix}
+			      \]
+			      the $A = q^k$ rows.
+		      }
+		\item For linear codes, there are nice procedures for encoding
+		      and decoding.
+	\end{enumerate}
+}
+
+\newdef{Disadvantage}{
+	Linear codes are not defined if $q$ is not a power of a prime number.
+}
+
+\newdef{Disadvantage 2}{
+	It might be a restriction if we restrict our attention to linear codes.
+	It may happen that there are codes which are not linear, but have more
+	optimal parameters $n, M, d$.
+}
+
+\header{Equivalence of Linear Codes}
+
+Let $C, C'$ be linear codes. We say $C$ and $C'$ are equivalent if we can pass
+from $C$ to $C'$ by applying
+\begin{enumerate}
+	\item Permutating columns
+	\item In a fixed column, replace entries by multiplying by a nonzero
+	      scalar $a \in F$.
+\end{enumerate}
+
+\newdef{Lemma}{
+	Multiplication of elements from $F$ by a nonzero scalar is a
+	permutation of $F$, i.e
+	\aligned{
+		\upvarphi: F & \rightarrow F                               \\
+		x            & \rightarrow ax \textnormal{ is a bijection} \\
+	}
+}
+
+\newdef{Remark}{
+	Multiplication by a nonzero scalar is a permutation of $F$. But not
+	every permutation can be obtained in this way.
+
+	So our definition is weaker than the standard definition.
+}
+
+\newdef{Corollary}{
+	Equivalent linear codes have the same parameters $n, M, d$.
+
+	Observation:
+	\aligned{
+		\textnormal{let } \upvarphi: F & \rightarrow F               \\
+		\downarrow                     & \hspace{17pt}\downarrow     \\
+		a_i                            & \hspace{17pt}\upvarphi(a_i)
+	}
+	Let $a = \upvarphi(1)$.
+
+	If $\upvarphi$ comes from the multiplier then the scalar $a$ is the
+	Image of $1: a = \upvarphi(1)$.
+
+	$\upvarphi(x_i) = ax_i \forall i$.
+}
+
+\newdef{Remark}{
+	If $C$ is linear and we apply our two operations the resulting code is
+	linear.
+}
+
+\newdef{Reminder}{
+	In Linear algebra, we can use the following operations on rows:
+	\begin{itemize}
+		\item R1: Permutation of Rows
+		\item R2: Multiplication of rows by nonzero scalar
+		\item R3: Addition of rows
+		\item C1: Permutation of columns
+		\item C2: Multiplication of column by a nonzero scalar
+	\end{itemize}
+
+	Every matrix $A$ is equivalent to a matrix in reduced echelon form.
+}
+
+Let $A$ be a matrix of size $k \times n$ of rank $k$ then applying
+$R1, \cdots, C2$ we can pass to a reduced echelon form.
+
+\[
+	\begin{bmatrix}
+		1 &        & 0 & | &      \\
+		  & \ddots &   & | & A\ \ \\
+		0 &        & 1 & | &      \\
+	\end{bmatrix}
+\]
+There would be $k$ rows, and the left side would have $k$ columns and the right
+side would be $n-k$ columns.
+
+\newdef{Theorem}{
+	Let $C$ be an $[n, k]$-code. Let $G$ be a generator matrix,
+	$(k \times n)$. Let $G'$ be a matrix obtained from $G$ by applying
+	operations of type $(R1), \cdots, (C2)$.
+
+	Let $C'$ be a linear code with generator matrix $G'$. Then $C$ is
+	equivalent to $C'$.
+}
+
+\newdef{Corrollary}{
+	Let $G$ be a generator matrix of an $[n, k]$-code $C$. Then $C$ is
+	equivalent to a linear code $[n, k]$ $C' \st$ a generator matrix $G'$
+	of $C'$ is the shape
+
+	\[
+		\begin{bmatrix}
+			1 &        & 0 & | &       \\
+			  & \ddots &   & | & A'\ \ \\
+			0 &        & 1 & | &       \\
+		\end{bmatrix}
+	\]
+}
+
+\newdef{Remark}{
+	If we apply operations $(R1), (R2), (R3)$ to $G$, then the resulting
+	code $C' = C$.
+}
+
+\newdef{Remark}{A reduced echelon form $G'$ of $G$ is not unique.}
+
+\header{Encoding With Linear Codes}
+\eqs{
+	F, |F| = q, (q = p^m) \\
+	C \textnormal{ is } [n-k]-code \\
+}
+
+May assume a generator matrix of $C$:
+\[
+	G = \begin{bmatrix}
+		1 &        & 0 & | &      \\
+		  & \ddots &   & | & A\ \ \\
+		0 &        & 1 & | &      \\
+	\end{bmatrix}
+\]
+
+So $C$ consists of $q^k$ distinct codewords.
+
+\[
+	C = \begin{bmatrix}
+		G      \\
+		-      \\
+		\vdots \\
+	\end{bmatrix}
+\]
+
+So we can send $q^k$ distinct messages we indentify these messages with vectors
+of $F^k = F \times \cdots \times F$.
+
+$V = F^n, k < n$.
+
+Let $u = (u_1, \cdots, u_k) \in F^k$ which we want to send. We encode $u$ as
+follows
+
+$u \cdot G = u_1r_1 + u_2r_2 + \cdots + u_kr_k$
+
+$u$ is a $1 \times k$ matrix $G$ is $k \times n$. So $(1 \times k) \cdot
+	(k \times n) = (1 \times n)$ is the resulting vector.
+
+here $r_1, \cdots, r_k$ are rows of $G$, $u\cdot G \in C$.
 
 \header{Decoding}
 
@@ -40,9 +951,10 @@ possible weight and call it the \textbf{coset leader.}
 
 To our code $C$ we attach the following array (matrix) called the
 \textbf{standard array} as follows: the size of this array is
-$q^{n-k} \times q^k$, here $q = |F|$, $k = \textnormal{dim} C$.
+$q^{n-k} \times q^k$, here $q = |F|$, $k = \textnormal{dim } C$.
 
-\textbf{Row 1:} Let us number all vectors in $C = 0+C$ to be $C = \{v_1,\ \cdots,\ v_{qk}\}$.
+\textbf{Row 1:} Let us number all vectors in $C = 0+C$ to be
+$C = \{v_1,\ \cdots,\ v_{qk}\}$.
 
 Assume $v_1 = 0$, then $C = \{0,\ v_2,\ \cdots, v_{qk}\}$.
 
