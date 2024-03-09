@@ -961,4 +961,435 @@ Assume $v_1 = 0$, then $C = \{0,\ v_2,\ \cdots, v_{qk}\}$.
 \textbf{Row 2:} Choose a vector called $a_2$ of minimal weight among remaining
 vectors, and let row 2 be $a_2,\ a_2+v_2,\ a_2+v_3,\ \cdots,\ v_{qk}$.
 
+\header{March 1}
+
+Consider
+\aligned{
+	V          & = F_q^n                   & \\
+	V \times V & \rightarrow F_q             \\
+	(v, u)     & \rightarrow \sum v_iu_i     \\
+	v          & = (v_1\ v_2\ \cdots\ v_n)   \\
+	u          & = (u_1\ u_2\ \cdots\ u_n)   \\
+}
+\newdef{Remark}{
+	It may happen that $v \cdot v = 0$ and $v \neq 0$.
+}
+
+\newdef{Def}{$u$ is \textbf{orthogonal} to $v$ if $u \cdot v = 0$.}
+
+\newdef{Notation}{$u \perp v$}
+
+\newdef{Def}{
+	Let $W \subset V$ be a \ul{subset.}
+	Then the orthogonal complement to $W$ is
+	\[W^\perp = \{ v \in V\ |\ v \cdot w = 0\ \forall w \in W\}\]
+}
+
+\newdef{Lemma}{
+	$W^\perp$ is a vector subspace in $V$.
+}
+
+\newdef{Proof}{
+	We need to show $W^\perp$ is a vector subspace, i.e
+	\begin{enumerate}
+		\item if $v_1, v_2 \in W^\perp$ then $v_1+v_2 \in W^\perp$.
+		      Take $\forall w \in W$ then
+		      \aligned {
+			      (v_1+v_2) \cdot w & = v_1w + v_2w \\
+			                        & = 0 + 0       \\
+			                        & = 0           \\
+		      }
+		\item if $v\in W^\perp$, $r \in F$, then
+		      $r \cdot v \in W^\perp$.
+
+		      Showing this is similarly trivial.
+	\end{enumerate}
+}
+
+\newdef{Def (The dual code)}{
+	Let $C \subset V$ be a linear code. Then $C^\perp$ is caled the
+	\textbf{dual code.}
+}
+So
+\aligned{
+C^\perp &= {v \in V\ |\ v \cdot c = 0\ \forall c \in C} \\
+v &= (v_1\ \cdots\ v_n) \\
+c &= (c_1\ \cdots\ c_n) \\
+v \cdot c &= \sum v_ic_i = 0 \\
+}
+To construct $C^\perp$ we need: $C = \{c_1\ cdots\ c_{q^k}\}$
+and then we solved
+
+\aligned {
+	v \cdot c_1     & = 0    \\
+	v \cdot c_2     & = 0    \\
+	\vdots          & \vdots \\
+	v \cdot c_{q^k} & = 0    \\
+}
+which is a system of $n$ variables and $q^k$ equations.
+
+\newdef{Lemma}{
+	Let $C$ be a linear code and let $G$ be a generator matrix (size
+	$G$ = $k \times n$).
+
+	Then $C^\perp$ consists of all vectors $v \in V \st$
+	\aligned {
+		G \cdot v^T                & = 0                          \\
+		\textnormal{note that }v^T & = \begin{pmatrix}
+			v_1    \\
+			\vdots \\
+			v_n    \\
+		\end{pmatrix} \\
+		v \cdot G^T                & = 0
+	}
+	or equivalent (essentially you're solving the generator matrix as if it
+	was a system of equations).
+}
+
+\header{March 4, 2024}
+
+\newdef{Lemma}{
+	Let $G$ be a generator matrix of $C$. Then
+	$v \in C^\perp \iff Gv^T = 0$ or $vG^T = 0$.
+
+	Note: $a \cdot b$ here means inner product.
+}
+
+\newdef{Proof}{
+	Need: let $v \in V$ s.t v is orthogonal to all vectors in $G$.
+
+	Say $v_1, \cdots, v_k$, hence $C = span\{v_1, \cdots, v_k\}$,
+	i.e $v_i \cdot v = 0$.
+	We want to show that $v$ is orthogonal to all vectors in $C$.
+
+	To prove, take any vector $u \in C$. Write
+	$u = a_1v_1 + \cdots + a_kv_k$, $a_i \in F$.
+
+	Want: $u \cdot v = 0$.
+
+	Indeed, \aligned{
+		u \cdot v & = (\sum a_iv_i) \cdot v \\
+		          & = \sum a_i v_i v        \\
+		          & = \sum a_i 0            \\
+		          & = 0                     \\
+	}
+}
+
+\newdef{Theorem}{
+	Let $C$ be a linear $[n, k]$-code. Then $C^\perp$ is a linear
+	$[n, n-k]$-code.
+}
+
+\newdef{Proof}{
+	We need to compute the dimension of $C^\perp$.
+
+	Write \[
+		G = \begin{bmatrix}
+			a_{11} & \cdots & a_{1n} \\
+			a_{21} & \cdots & a_{2n} \\
+			\vdots & \cdots & \vdots \\
+			a_{k1} & \cdots & a_{kn} \\
+		\end{bmatrix}
+	\]
+
+	The rank of $G$ is $k$ because rows are linearly independent.
+
+	\[
+		G \cdot \begin{pmatrix}
+			\textnormal{TODO: see pic I took}
+		\end{pmatrix} = 0
+	\]
+
+	Pass to a reduced echelon form of $G$.
+
+	\[
+		\begin{bmatrix}
+			1 &        & 0 & | &   \\
+			  & \ddots &   & | & A \\
+			0 &        & 1 & | &   \\
+		\end{bmatrix}
+	\]
+
+	The number of free variables is the dimension, and $A$ has $n-k$
+	columns, so the dimension is $n-k$.
+}
+
+\newdef{Example}{
+	\aligned{
+		C   & = \begin{bmatrix}
+			0 & 0 & 0 & 0 \\
+			1 & 1 & 0 & 0 \\
+			0 & 0 & 1 & 1 \\
+			1 & 1 & 1 & 1 \\
+		\end{bmatrix} \\
+		V   & = F^4                        \\
+		F   & = \mathbb{Z}_2               \\
+		|C| & = 4                          \\
+	}
+
+	We can see that
+	\[G = \begin{bmatrix}
+			1 & 1 & 0 & 0 \\
+			0 & 0 & 1 & 1 \\
+		\end{bmatrix}\]
+
+	because the last element of $C$ is a linear combination of these.
+
+	$k = 2$, and $C^\perp$ is all the elements
+	$v = (v_1\ v_2\ \cdots\ v_4)$ such that $Gv^T = 0$.
+
+	So our system is
+	\aligned {
+		v_1 + v_2 & = 0 \\
+		v_3 + v_4 & = 0 \\
+	}
+
+	which gives us $v_1 = v_2$, and $v_3 = v_4$ (because we're in
+	$\mathbb{Z}_2$)
+
+	$\therefore C^\perp = \{(v,v, u, u)\}$, and $C = C^\perp$.
+}
+
+\newdef{Example}{
+	\aligned {
+		C & = \begin{bmatrix}
+			0 & 0 & 0 \\
+			1 & 1 & 0 \\
+			0 & 1 & 1 \\
+			1 & 0 & 1 \\
+		\end{bmatrix} \\
+		C & \subset \mathbb{Z}^3_2       \\
+		G & = \begin{bmatrix}
+			1 & 1 & 0 \\
+			0 & 1 & 1 \\
+		\end{bmatrix} \\
+	}
+
+	$\therefore C^\perp$ is every $v = (v_1\ v_2\ v_3)$ such that
+	$Gv_T = 0$. $\therefore$ we get the system
+	\aligned {
+		v_1 + v_2 & = 0 \\
+		v_2 + v_3 & =0  \\
+	}
+	Which in $\mathbb{Z}_2$, since subtraction and addition are the same,
+	gives us $v_1 = v_2 = v_3$, and thus
+	$C^\perp = \{ (a, a, a)\ \forall a \in \mathbb{Z}_2 \}$
+}
+
+\newdef{Def}{
+	Let $C$ be a linear $[n, k]$-code. A \b{parity check matrix} $H$ of $C$
+	is a generator matrix of $C^\perp$.
+}
+
+\newdef{Remark}{
+	The size of $H$:  $(n-k) \times n$
+
+	It follows from the definition that if $G$ is a generator matrix of
+	$C$ then $G \cdot H^T = 0$.
+}
+
+\newdef{Example}{In our last example, $H = [1\ 1\ 1]$.}
+
+\newdef{Theorem}{
+Let $C$ be an $[n, k]$ linear code and let $G$ be a generator matrix.
+Assume $G$ is in a reduced echelon form such as
+\[G = [I_k\ |\ A]\] where $I_k$ is the $k \times k$ identity matrix.
+
+Then the matrix
+\[
+	H = [-A^T\ |\ I_{n-k}]
+\]
+is a parity check matrix. If the code is binary, you can ignore the
+minus.
+}
+
+\header{March 6}
+
+\newdef{Remark}{
+	A generator matrix $G$ for a linear code $C$ can be given not in the
+	standard form. We can pass from $G$ to a standard form using elementary
+	row operations only we don't change $C$.
+
+	But if we need to apply column operations as well we obtain a new code
+	$C'$ which is equivalent to $C$.
+}
+
+\newdef{Def}{
+we say that a parity check matrix $H$ is in the standard form if
+$H = [B\ I_{n-k}]$.
+}
+
+\newdef{Remark}{
+	If we know $H$ we can restore $C$ as follows:
+
+	\[C = \{v \in V\ |\ v \cdot H^T = 0\}\]
+
+	We used here the fact that $(C^\perp)^\perp = C$.
+
+	This can be rewritten as
+	\aligned{
+		v \cdot h_1     & = 0 \\
+		v \cdot h_2     & = 0 \\
+		\vdots          &     \\
+		v \cdot h_{n-k} & = 0
+	}
+	Here $h_i$ is the $i_{th}$ row of $H$.
+}
+
+\header{Syndrome}
+
+Let $H$ be a parity check matrix.
+
+\newdef{Def}{
+	Let $v \in V = F^n$. The syndrome of $v$, denoted by $s(v)$, is
+	$s(v) = v \cdot H^T \in F^{n-k}$.
+
+	(since $(1 \times n) \cdot (n \times (n-k)) = 1 \times (n-k)$)
+}
+
+\newdef{Remark}{
+	It follows from the definition that $s(v)$ has the following
+	coordinates:
+	$s(v) = (v \cdot h_1, v \cdot h_2, \cdots, v \cdot h_{n-k})$
+
+	where $h_i$ are rows of $H$.
+}
+
+\newdef{Lemma}{
+	\begin{enumerate}
+		\item $s(v) = \bar{0} \iff v \in C$
+		\item $v, w \in V $ are in the same left coset iff
+		      $s(v) = s(w)$.
+		\item $\exists$ a one-to-one correspondence between the set of
+		      coset leaders and their syndromes.
+	\end{enumerate}
+}
+
+\newdef{Remark}{
+	Coset leaders have different syndromes. This follows from $(2)$ in the
+	previous Lemma.
+}
+
+\header{Syndrome Decoding}
+
+Assume we send a codeword $x$ through a channel and recieve $y$.
+\begin{enumerate}
+	\item Write two columns only:
+	      \[
+		      \begin{bmatrix}
+			      Coset\ Leaders & Their\ Syndromes \\
+			      e_0            & s(e_0)           \\
+			      e_1            & s(e_1)           \\
+			      \vdots         & \vdots           \\
+			      e_m            & s(e_m)           \\
+		      \end{bmatrix}
+	      \]
+
+	      Remember that there are \[m = \frac{q^n}{q^k} = q^{n-k}\] left
+	      cosets.
+	\item Compute $s(y) = y \cdot H^T$
+	\item Find $s(y)$ in the second column.
+	\item Find the corresponding coset leader $e_i$ and decode $y$ as
+	      $y - e_i$.
+\end{enumerate}
+
+\header{Hamming Codes (or: maximizing $M$)}
+
+We start from $V = \mathbb{Z}^n_2$. $C \subset V, [n, k]$-linear code.
+
+\ul{Question:} What is the maximum possible value of $M$ achievable for linear
+codes?
+
+\[M = 2^k\]
+
+Let $r = n-k \geq 0$. $r$ is called the redundancy number, and is exactly the
+number of digits which we add when encoding our messages.
+
+\ul{Question:} What is the maximum possible value of $M$ for linear codes with
+$r$ being fixed?
+
+\newdef{Analysing}{
+Let $G$ be a generator matrix in standard form.
+
+\[G = [I_k\ A]\]
+
+$G$ is a $k \times r$ matrix, with $A$ having $r = n-k$ rows and $k$ columns.
+
+\[H = [A^T\ I_{r}]\]
+
+having $r$ rows and $n$ columns. With $H$ we can now restore $C$ uniquely: it
+consists of vectors $v = (v_1\ \cdots\ v_n) \in V = \mathbb{Z}^n_2$ orthogonal
+to rows of $H$.
+
+Equivalently, $v_1 \cdot h_1 + v_2 \cdot h_2 + \cdots + v_n \cdot h_n = 0$
+where $h_1, \cdots, h_n$ are columns of $H$.
+}
+
+\ul{Question:} For which values $n$ is the value $M$ maximum possible?
+
+\[M = 2^k = 2^{n-r}\]
+
+We have: the bigger $n$ the bigger $M$ is?
+
+\ul{$n$ can't be arbitrary.} Some necessary conditions for $n$:
+\eqs {
+	\textnormal{the rank of } H = r \\
+	n \geq r \\
+	\textnormal{if } n = r, \textnormal{ then } c = 0 \\
+	\textnormal{if } n = r + 1, \textnormal{ then dim } c = 1, \textnormal{ it is spanned by 1 vector.} \\
+	M = 2^1 = 2
+}
+So it is true that a larger $n$ is better. $n \geq r$ is a lower bound, but
+what about an upper bound?
+
+Let us look at columns of $H: h_1, \cdots, h_n$.
+
+\ul{case 1:} There are two columns, say $h_i, h_j$, which coincide. consider
+\[v = (0\ \cdots\ 0\ 1\ 0\ \cdots\ 0\ 1\ 0\ \cdots\ 0) \]
+where the 1 is at positions $i$ and $j$.
+\aligned {
+	v_1 \cdot h_1 + v_2 \dot h_2 + \cdots + v_n \cdot h_n & =                               \\
+	v_i \cdot h_i + v_j \cdot h_j                         & = 1 \cdot h_i + 1 \cdot h_j = 0 \\
+	(h_i = h_j                                            & \Rightarrow h_i + h_j = 0).     \\
+}
+So the corresponding linear code $C$ contains a vector of weight 2. But since
+$d(C) = w(C) \leq 2$, such a code can't correct errors.
+
+\ul{case 2:} All columns in $H$ are distinct and nonzero.
+
+Columns live $W = \mathbb{Z}^r_2$.
+\[W \setminus \{0\} = 2^r - 1 \textnormal{ vectors }\]
+
+So an upper bound is $r \leq n \leq 2^r - 1$.
+
+$M$ is maximum possible if $n$ is maximum possible.
+\[2^k = 2^{n-r}\]
+
+\newdef{Def}{
+	Let $r$ be a fixed integer. Consider the matrix $H$ whose columns are
+	all nonzero vectors in $W = \mathbb{Z}^r_2$. Then the corresponding
+	linear code $C$ is called the binary Hamming code and is denoted by
+	$H(r, 2)$.
+}
+
+\newdef{Remark}{
+	The size of $C$ is $[2^r - 1, k = n-r = 2^r - 1 - r]$-code.
+	\[M = 2^k = 2^{r-1-r}\]
+}
+
+\newdef{Remark}{
+	We can take columns of $H, h_1, \cdots, h_n$ in any order. If we choose
+	a different order, we permute columns of $H$, hence a new linear code
+	$C'$ is equivalent to $C$.
+
+	So up to equivalence $\exists$ a unique Hamming code $H(r, 2)$.
+}
+
+\newdef{Remark}{
+	There exists a lexicographical order of vectors in
+	$W = \mathbb{Z}^r_2$.
+
+	Each integer $i$ can be written as a sum of powers of 2.
+}
+
 \end{document}
